@@ -1,1 +1,95 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TSLA - Add Client</title><style>body{font-family:-apple-system,sans-serif;background:#f5f5f5;margin:0}.wrap{max-width:700px;margin:auto;padding:20px}.card{background:#fff;border-radius:18px;padding:18px;margin-bottom:18px}h1{font-size:28px}h2{font-size:16px;color:#d71920}input,textarea{width:100%;padding:14px;margin:8px 0;border:1px solid #ddd;border-radius:12px;box-sizing:border-box}button{width:100%;padding:16px;border:none;border-radius:14px;background:#d71920;color:#fff;font-size:16px;font-weight:700}img{max-width:180px;display:none;margin-top:10px;border-radius:8px}</style></head><body><div class='wrap'><h1>Add Client</h1><div class='card'><h2>Personal</h2><input id='name' placeholder='Name *'><input id='ic' placeholder='IC *'><input id='phone' placeholder='Phone *'><input id='email' placeholder='Email'><textarea id='address' placeholder='Address'></textarea></div><div class='card'><h2>Bank</h2><input id='bankName' placeholder='Bank Name'><input id='bankAccountNumber' placeholder='Bank Account Number'><input id='bankAccountName' placeholder='Bank Account Name'></div><div class='card'><h2>Signature</h2><input type='file' id='signature' accept='image/*'><img id='preview'></div><button id='saveBtn'>Save Client</button></div><script src='js/storage.js'></script><script>let bankEdited=false;bankAccountName.oninput=()=>bankEdited=true;name.oninput=()=>{if(!bankEdited)bankAccountName.value=name.value};signature.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=x=>{preview.src=x.target.result;preview.style.display='block'};r.readAsDataURL(f)};saveBtn.onclick=()=>{if(!name.value||!ic.value||!phone.value){alert('Name, IC and Phone are required');return;}addClient({name:name.value,ic:ic.value,phone:phone.value,email:email.value,address:address.value,bankName:bankName.value,bankAccountNumber:bankAccountNumber.value,bankAccountName:bankAccountName.value,signature:preview.src||''});location.href='client.html';};</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TSLA - Add Client</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f5f5;margin:0}
+.wrap{max-width:720px;margin:auto;padding:20px}
+.card{background:#fff;border-radius:18px;padding:18px;margin-bottom:18px}
+h1{font-size:28px;margin:0 0 16px}
+h2{font-size:16px;color:#d71920}
+input,textarea{width:100%;padding:14px;margin:8px 0;border:1px solid #ddd;border-radius:12px;box-sizing:border-box}
+button{width:100%;padding:16px;border:none;border-radius:14px;background:#d71920;color:#fff;font-size:16px;font-weight:700}
+img{max-width:180px;display:none;margin-top:10px;border-radius:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Add Client</h1>
+
+<div class="card">
+<h2>Personal</h2>
+<input id="name" placeholder="Name *">
+<input id="ic" placeholder="IC *">
+<input id="phone" placeholder="Phone *">
+<input id="email" placeholder="Email">
+<textarea id="address" placeholder="Address"></textarea>
+</div>
+
+<div class="card">
+<h2>Bank</h2>
+<input id="bankName" placeholder="Bank Name">
+<input id="bankAccountNumber" placeholder="Bank Account Number">
+<input id="bankAccountName" placeholder="Bank Account Name">
+</div>
+
+<div class="card">
+<h2>Signature</h2>
+<input id="signature" type="file" accept="image/*">
+<img id="preview">
+</div>
+
+<button id="saveBtn">Save Client</button>
+</div>
+
+<script src="js/storage.js"></script>
+<script>
+let bankEdited=false;
+
+const nameInput=document.getElementById("name");
+const icInput=document.getElementById("ic");
+const phoneInput=document.getElementById("phone");
+const emailInput=document.getElementById("email");
+const addressInput=document.getElementById("address");
+const bankNameInput=document.getElementById("bankName");
+const bankAccNoInput=document.getElementById("bankAccountNumber");
+const bankAccNameInput=document.getElementById("bankAccountName");
+const signatureInput=document.getElementById("signature");
+const preview=document.getElementById("preview");
+const saveBtn=document.getElementById("saveBtn");
+
+bankAccNameInput.addEventListener("input",()=>bankEdited=true);
+nameInput.addEventListener("input",()=>{if(!bankEdited)bankAccNameInput.value=nameInput.value;});
+
+signatureInput.addEventListener("change",(e)=>{
+ const f=e.target.files[0];
+ if(!f)return;
+ const r=new FileReader();
+ r.onload=(x)=>{preview.src=x.target.result;preview.style.display="block";};
+ r.readAsDataURL(f);
+});
+
+saveBtn.addEventListener("click",()=>{
+ const client={
+  name:nameInput.value.trim(),
+  ic:icInput.value.trim(),
+  phone:phoneInput.value.trim(),
+  email:emailInput.value.trim(),
+  address:addressInput.value.trim(),
+  bankName:bankNameInput.value.trim(),
+  bankAccountNumber:bankAccNoInput.value.trim(),
+  bankAccountName:bankAccNameInput.value.trim(),
+  signature:preview.src||""
+ };
+ if(!client.name||!client.ic||!client.phone){
+   alert("Name, IC and Phone are required");
+   return;
+ }
+ addClient(client);
+ location.href="client.html";
+});
+</script>
+</body>
+</html>
