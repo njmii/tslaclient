@@ -1,90 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TSLA Client Manager</title>
-
-    <link rel="stylesheet" href="css/main.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TSLA</title>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f5f5;padding:24px}
+.logo{text-align:center;margin:24px 0}
+.logo img{width:90px}
+.grid{display:grid;gap:16px}
+.card{display:block;background:#fff;padding:22px;border-radius:18px;text-decoration:none;color:#111;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.title{font-size:22px;font-weight:700;margin-bottom:6px}
+.sub{font-size:14px;color:#666}
+</style>
 </head>
-
 <body>
-
-<div class="container">
-
-    <header>
-
-        <img src="assets/tslalogo.png" class="logo" alt="TSLA Logo">
-
-        <h1>Client Manager</h1>
-
-        <p>
-            Fast. Minimal. Built for insurance professionals.
-        </p>
-
-    </header>
-
-    <main>
-
-        <a href="#" class="card">
-
-            <div>
-
-                <h2>Clients</h2>
-
-                <span>Manage all clients</span>
-
-            </div>
-
-            <div class="arrow">
-
-                →
-
-            </div>
-
-        </a>
-
-        <a href="#" class="card">
-
-            <div>
-
-                <h2>Documents</h2>
-
-                <span>Store proposals & files</span>
-
-            </div>
-
-            <div class="arrow">
-
-                →
-
-            </div>
-
-        </a>
-
-        <a href="#" class="card">
-
-            <div>
-
-                <h2>Cancellation</h2>
-
-                <span>Auto-fill forms</span>
-
-            </div>
-
-            <div class="arrow">
-
-                →
-
-            </div>
-
-        </a>
-
-    </main>
-
+<div class="logo">
+<img src="assets/tslalogo.png" alt="TSLA">
 </div>
 
-<script src="js/app.js"></script>
+<div class="grid">
+<a class="card" href="client.html">
+<div class="title">Clients</div>
+<div class="sub">Manage client records</div>
+</a>
 
+<a class="card" href="cancellation.html">
+<div class="title">Cancellation</div>
+<div class="sub">Generate cancellation forms</div>
+</a>
+
+<a class="card" href="witness.html">
+<div class="title">Witness</div>
+<div class="sub">Witness information</div>
+</a>
+
+<a class="card" href="settings.html">
+<div class="title">Settings</div>
+<div class="sub">Agent profile & signature</div>
+</a>
+</div>
 </body>
 </html>
