@@ -15,7 +15,7 @@ button{width:100%;padding:16px;border:none;border-radius:14px;background:#d71920
 img{max-width:180px;display:none;margin-top:10px;border-radius:8px}
 </style>
 </head>
-<body>
+<body><div style="padding:16px 20px 0"><button onclick="history.back()" style="width:auto;background:#fff;color:#d71920;border:1px solid #d71920;padding:10px 16px;border-radius:10px;font-weight:700">← Back</button></div>
 <div class="wrap">
 <h1>Add Client</h1>
 
@@ -87,7 +87,7 @@ saveBtn.addEventListener("click",()=>{
    alert("Name, IC and Phone are required");
    return;
  }
- addClient(client);
+ saveClient(client);
  location.href="client.html";
 });
 </script>
