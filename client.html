@@ -1,57 +1,297 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>TSLA • Client Manager</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>TSLA - Clients</title>
+
 <link rel="stylesheet" href="css/main.css">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+body{
+
+background:#f7f7f7;
+
+color:#222;
+
+padding:20px;
+
+}
+
+.header{
+
+display:flex;
+
+align-items:center;
+
+gap:12px;
+
+margin-bottom:25px;
+
+}
+
+.logo{
+
+width:42px;
+
+}
+
+.title{
+
+font-size:28px;
+
+font-weight:700;
+
+}
+
+.search{
+
+width:100%;
+
+padding:16px;
+
+border:none;
+
+border-radius:16px;
+
+background:white;
+
+font-size:16px;
+
+margin-bottom:20px;
+
+outline:none;
+
+box-shadow:0 4px 12px rgba(0,0,0,.05);
+
+}
+
+.section{
+
+font-size:13px;
+
+color:#999;
+
+margin-bottom:10px;
+
+font-weight:600;
+
+letter-spacing:.5px;
+
+}
+
+.card{
+
+background:white;
+
+border-radius:18px;
+
+padding:18px;
+
+margin-bottom:14px;
+
+box-shadow:0 4px 12px rgba(0,0,0,.05);
+
+cursor:pointer;
+
+transition:.2s;
+
+}
+
+.card:hover{
+
+transform:translateY(-2px);
+
+}
+
+.name{
+
+font-size:18px;
+
+font-weight:700;
+
+margin-bottom:8px;
+
+}
+
+.info{
+
+font-size:14px;
+
+color:#666;
+
+margin-bottom:4px;
+
+}
+
+.add{
+
+position:fixed;
+
+bottom:25px;
+
+right:25px;
+
+width:64px;
+
+height:64px;
+
+border:none;
+
+border-radius:50%;
+
+background:#d71920;
+
+color:white;
+
+font-size:34px;
+
+cursor:pointer;
+
+box-shadow:0 10px 20px rgba(215,25,32,.3);
+
+}
+
+</style>
+
 </head>
+
 <body>
-<div class="container">
 
-<header>
-<a href="index.html" style="text-decoration:none;color:#777;">← Home</a>
-<img src="assets/tslalogo.png" class="logo" alt="TSLA Logo">
-<h1>Client Manager</h1>
-<p>Search and manage your clients.</p>
-</header>
+<div class="header">
 
-<main>
+<img src="assets/tslalogo.png" class="logo">
+
+<div class="title">Clients</div>
+
+</div>
 
 <input
-type="search"
-placeholder="Search client..."
-style="width:100%;padding:16px;border:1px solid #ececec;border-radius:18px;margin-bottom:18px;font-size:16px;">
 
-<a href="#" class="card">
-<div>
-<h2>John Tan</h2>
-<span>Hospital • Life</span>
-</div>
-<div class="arrow">→</div>
-</a>
+class="search"
 
-<a href="#" class="card">
-<div>
-<h2>Nur Aisyah</h2>
-<span>Medical Card</span>
-</div>
-<div class="arrow">→</div>
-</a>
+id="search"
 
-<a href="#" class="card">
-<div>
-<h2>+ Add Client</h2>
-<span>Create a new client profile</span>
-</div>
-<div class="arrow">→</div>
-</a>
+placeholder="Search Name / IC / Phone"
 
-</main>
+>
+
+<div class="section">
+
+RECENT CLIENTS
 
 </div>
 
-<script src="js/app.js"></script>
+<div id="list">
+
+<div class="card">
+
+<div class="name">
+
+John Tan
+
+</div>
+
+<div class="info">
+
+900101101234
+
+</div>
+
+<div class="info">
+
+0123456789
+
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="name">
+
+Nurul Aisyah
+
+</div>
+
+<div class="info">
+
+920505101111
+
+</div>
+
+<div class="info">
+
+01199887766
+
+</div>
+
+</div>
+
+</div>
+
+<button
+
+class="add"
+
+onclick="location.href='add-client.html'"
+
+>
+
++
+
+</button>
+
+<script>
+
+const search=document.getElementById("search");
+
+const cards=document.querySelectorAll(".card");
+
+search.addEventListener("input",()=>{
+
+const value=search.value.toLowerCase();
+
+cards.forEach(card=>{
+
+const text=card.innerText.toLowerCase();
+
+card.style.display=text.includes(value)
+
+?
+
+"block"
+
+:
+
+"none";
+
+});
+
+});
+
+cards.forEach(card=>{
+
+card.onclick=()=>{
+
+location.href="client-profile.html";
+
+};
+
+});
+
+</script>
+
 </body>
-</html>
 
+</html>
