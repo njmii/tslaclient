@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Add Client</title>
+<title>Add/Edit Client</title>
 <link rel="stylesheet" href="css/main.css">
 <style>
 .section-card { background: #fff; border-radius: 18px; padding: 18px; margin-bottom: 18px; box-shadow: var(--shadow); border: 1px solid var(--border); }
@@ -13,22 +13,23 @@ input:focus, textarea:focus { border-color: var(--primary); outline: none; backg
 .save-btn { width: 100%; padding: 18px; border: none; border-radius: 16px; background: var(--primary); color: #fff; font-size: 18px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(215,25,32,0.2); }
 .btn-back { background: #fff; color: #d71920; border: 1px solid #d71920; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 20px; }
 #preview { max-width: 100%; display: none; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border); background-image:
-    linear-gradient(45deg, #ccc 25%, transparent 25%),
-    linear-gradient(-45deg, #ccc 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #ccc 75%),
-    linear-gradient(-45deg, transparent 75%, #ccc 75%);
+    linear-gradient(45deg, #eee 25%, transparent 25%),
+    linear-gradient(-45deg, #eee 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #eee 75%),
+    linear-gradient(-45deg, transparent 75%, #eee 75%);
     background-size: 10px 10px;
     background-position: 0 0, 0 5px, 5px 5px, 5px 0;
 }
-.control-group { margin-top: 10px; display: none; }
-.control-group label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; }
-input[type=range] { width: 100%; margin: 0; padding: 0; background: transparent; }
+.control-group { margin-top: 10px; display: none; background: #f9f9f9; padding: 12px; border-radius: 10px; }
+.control-group label { display: block; font-size: 12px; color: #666; margin-bottom: 8px; font-weight: 700; }
+input[type=range] { width: 100%; margin: 0; padding: 0; background: transparent; cursor: pointer; }
+.hint { font-size: 11px; color: #999; margin-top: 4px; }
 </style>
 </head>
 <body>
 <div class="container">
     <button class="btn-back" onclick="history.back()">← Back</button>
-    <h1>Add Client</h1>
+    <h1 id="pageTitle">Add Client</h1>
 
     <div class="section-card">
         <h2>Personal Information</h2>
@@ -50,8 +51,9 @@ input[type=range] { width: 100%; margin: 0; padding: 0; background: transparent;
         <h2>Signature</h2>
         <input id="signature" type="file" accept="image/*">
         <div id="controls" class="control-group">
-            <label>Background Removal Threshold (Slider to remove more background)</label>
+            <label>Background Removal Threshold</label>
             <input id="threshold" type="range" min="0" max="255" value="200">
+            <div class="hint">Slide left to keep more detail, right to remove more background.</div>
         </div>
         <img id="preview">
         <canvas id="canvas" style="display:none;"></canvas>
@@ -64,6 +66,8 @@ input[type=range] { width: 100%; margin: 0; padding: 0; background: transparent;
 <script>
 let bankEdited = false;
 let originalImage = null;
+const urlParams = new URLSearchParams(window.location.search);
+const editId = urlParams.get('edit');
 
 const ni = document.getElementById("name"),
       ii = document.getElementById("ic"),
@@ -78,7 +82,38 @@ const ni = document.getElementById("name"),
       sb = document.getElementById("saveBtn"),
       th = document.getElementById("threshold"),
       ct = document.getElementById("controls"),
-      cv = document.getElementById("canvas");
+      cv = document.getElementById("canvas"),
+      pt = document.getElementById("pageTitle");
+
+if (editId) {
+    pt.textContent = "Edit Profile";
+    const client = getClients().find(c => c.id === editId);
+    if (client) {
+        ni.value = client.name;
+        ii.value = client.ic;
+        pi.value = client.phone;
+        ei.value = client.email || "";
+        ai.value = client.address || "";
+        bn.value = client.bankName || "";
+        ba.value = client.bankAccountNumber || "";
+        bh.value = client.bankAccountName || "";
+        if (client.signature) {
+            pv.src = client.signature;
+            pv.style.display = "block";
+            // In edit mode, we don't have the "original" un-processed image unless we re-upload
+            // But we can still show the controls if the user wants to re-process what's there
+            // However, it's better to only show controls for new uploads or if we store the original.
+            // For now, let's just show it if there is a signature.
+            originalImage = new Image();
+            originalImage.onload = () => {
+                // If it's already transparent, processing it again with the same logic might work fine
+                ct.style.display = "block";
+            };
+            originalImage.src = client.signature;
+        }
+        bankEdited = true;
+    }
+}
 
 bh.addEventListener("input", () => bankEdited = true);
 ni.addEventListener("input", () => { if(!bankEdited) bh.value = ni.value; });
@@ -87,9 +122,24 @@ function processImage() {
     if (!originalImage) return;
 
     const ctx = cv.getContext('2d');
-    cv.width = originalImage.width;
-    cv.height = originalImage.height;
-    ctx.drawImage(originalImage, 0, 0);
+
+    // Scale down if very large to save localStorage space
+    let width = originalImage.width;
+    let height = originalImage.height;
+    const maxDim = 800;
+    if (width > maxDim || height > maxDim) {
+        if (width > height) {
+            height *= maxDim / width;
+            width = maxDim;
+        } else {
+            width *= maxDim / height;
+            height = maxDim;
+        }
+    }
+
+    cv.width = width;
+    cv.height = height;
+    ctx.drawImage(originalImage, 0, 0, width, height);
 
     const imageData = ctx.getImageData(0, 0, cv.width, cv.height);
     const data = imageData.data;
@@ -100,12 +150,19 @@ function processImage() {
         const g = data[i + 1];
         const b = data[i + 2];
 
-        // If the pixel is lighter than the threshold (closer to white), make it transparent
-        // Brightness formula: 0.299R + 0.587G + 0.114B
-        const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+        // Calculate brightness (grayscale value)
+        const v = 0.2126 * r + 0.7152 * g + 0.0722 * b;
 
-        if (brightness > threshold) {
-            data[i + 3] = 0; // Alpha
+        // If brightness is above threshold, make it transparent
+        if (v > threshold) {
+            data[i + 3] = 0;
+        } else {
+            // Optional: enhance contrast by making darker pixels fully black
+            // This makes the signature "harder" as requested
+            const darkenFactor = 0.8;
+            data[i] = r * darkenFactor;
+            data[i+1] = g * darkenFactor;
+            data[i+2] = b * darkenFactor;
         }
     }
 
@@ -131,6 +188,7 @@ th.addEventListener("input", processImage);
 
 sb.addEventListener("click", () => {
     const c = {
+        id: editId,
         name: ni.value.trim(),
         ic: ii.value.trim(),
         phone: pi.value.trim(),
@@ -146,7 +204,7 @@ sb.addEventListener("click", () => {
         return;
     }
     saveClient(c);
-    location.href = "client.html";
+    location.href = editId ? "client-profile.html?id=" + editId : "client.html";
 });
 </script>
 </body>

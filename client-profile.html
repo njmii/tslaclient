@@ -29,9 +29,10 @@ img.sig { width: 100%; border-radius: 8px; border: 1px solid #eee; margin-top: 1
 </head>
 <body>
 <div class="container">
-    <button class="btn btn-back" onclick="history.back()">← Back</button>
+    <button class="btn btn-back" onclick="location.href='client.html'">← Back</button>
     <div id="profile"></div>
     <div class="actions">
+        <button class="btn btn-edit" id="editBtn">Edit Profile</button>
         <button class="btn btn-delete" onclick="handleDelete()">Delete Client</button>
     </div>
 </div>
@@ -41,6 +42,11 @@ img.sig { width: 100%; border-radius: 8px; border: 1px solid #eee; margin-top: 1
 const urlParams = new URLSearchParams(window.location.search);
 const clientId = urlParams.get('id');
 const profileDiv = document.getElementById('profile');
+const editBtn = document.getElementById('editBtn');
+
+if (clientId) {
+    editBtn.onclick = () => location.href = 'add-client.html?edit=' + clientId;
+}
 
 function loadProfile() {
     const clients = getClients();
