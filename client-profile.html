@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Client Profile</title>
+<link rel="stylesheet" href="css/main.css">
+<style>
+.profile-card { background: #fff; border-radius: 18px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+.label { font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 4px; }
+.value { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+.actions { display: flex; gap: 12px; }
+.btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; text-align: center; text-decoration: none; }
+.btn-edit { background: #eee; color: #111; }
+.btn-delete { background: #ffebee; color: #d71920; }
+.btn-back { background: #fff; color: #d71920; border: 1px solid #d71920; width: auto; margin-bottom: 20px; }
+img.sig { width: 100%; border-radius: 8px; border: 1px solid #eee; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="container">
+    <button class="btn btn-back" onclick="history.back()">← Back</button>
+    <div id="profile"></div>
+    <div class="actions">
+        <button class="btn btn-delete" onclick="handleDelete()">Delete Client</button>
+    </div>
+</div>
+
+<script src="js/storage.js"></script>
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const clientId = urlParams.get('id');
+const profileDiv = document.getElementById('profile');
+
+function createField(label, value) {
+    const card = document.createElement('div');
+    card.className = 'profile-card';
+
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'label';
+    labelDiv.textContent = label;
+
+    const valueDiv = document.createElement('div');
+    valueDiv.className = 'value';
+    valueDiv.textContent = value || '-';
+
+    card.appendChild(labelDiv);
+    card.appendChild(valueDiv);
+    return card;
+}
+
+function loadProfile() {
+    const clients = getClients();
+    const client = clients.find(c => c.id === clientId);
+
+    if (!client) {
+        profileDiv.textContent = 'Client not found';
+        return;
+    }
+
+    profileDiv.innerHTML = ''; // Clear previous content
+
+    // Personal Info Card
+    const personalCard = document.createElement('div');
+    personalCard.className = 'profile-card';
+
+    const fields = [
+        { label: 'Name', value: client.name },
+        { label: 'IC Number', value: client.ic },
+        { label: 'Phone', value: client.phone },
+        { label: 'Email', value: client.email },
+        { label: 'Address', value: client.address }
+    ];
+
+    fields.forEach(f => {
+        const l = document.createElement('div');
+        l.className = 'label';
+        l.textContent = f.label;
+        const v = document.createElement('div');
+        v.className = 'value';
+        v.textContent = f.value || '-';
+        personalCard.appendChild(l);
+        personalCard.appendChild(v);
+    });
+    profileDiv.appendChild(personalCard);
+
+    // Bank Info Card
+    const bankCard = document.createElement('div');
+    bankCard.className = 'profile-card';
+    const bankFields = [
+        { label: 'Bank Name', value: client.bankName },
+        { label: 'Account Number', value: client.bankAccountNumber },
+        { label: 'Account Name', value: client.bankAccountName }
+    ];
+    bankFields.forEach(f => {
+        const l = document.createElement('div');
+        l.className = 'label';
+        l.textContent = f.label;
+        const v = document.createElement('div');
+        v.className = 'value';
+        v.textContent = f.value || '-';
+        bankCard.appendChild(l);
+        bankCard.appendChild(v);
+    });
+    profileDiv.appendChild(bankCard);
+
+    // Signature Card
+    const sigCard = document.createElement('div');
+    sigCard.className = 'profile-card';
+    const sigLabel = document.createElement('div');
+    sigLabel.className = 'label';
+    sigLabel.textContent = 'Signature';
+    sigCard.appendChild(sigLabel);
+
+    if (client.signature) {
+        const img = document.createElement('img');
+        img.className = 'sig';
+        img.src = client.signature;
+        sigCard.appendChild(img);
+    } else {
+        const noSig = document.createElement('div');
+        noSig.className = 'value';
+        noSig.textContent = 'No signature';
+        sigCard.appendChild(noSig);
+    }
+    profileDiv.appendChild(sigCard);
+}
+
+function handleDelete() {
+    if (confirm('Are you sure you want to delete this client?')) {
+        deleteClient(clientId);
+        location.href = 'client.html';
+    }
+}
+
+loadProfile();
+</script>
+</body>
+</html>

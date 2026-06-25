@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Add Client</title>
+<link rel="stylesheet" href="css/main.css">
+<style>
+.section-card { background: #fff; border-radius: 18px; padding: 18px; margin-bottom: 18px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+.section-card h2 { font-size: 14px; color: var(--primary); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; }
+input, textarea { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid var(--border); border-radius: 12px; box-sizing: border-box; font-size: 16px; background: #fcfcfc; }
+input:focus, textarea:focus { border-color: var(--primary); outline: none; background: #fff; }
+.save-btn { width: 100%; padding: 18px; border: none; border-radius: 16px; background: var(--primary); color: #fff; font-size: 18px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(215,25,32,0.2); }
+.btn-back { background: #fff; color: #d71920; border: 1px solid #d71920; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 20px; }
+#preview { max-width: 100%; display: none; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="container">
+    <button class="btn-back" onclick="history.back()">← Back</button>
+    <h1>Add Client</h1>
+
+    <div class="section-card">
+        <h2>Personal Information</h2>
+        <input id="name" placeholder="Full Name *">
+        <input id="ic" placeholder="IC Number *">
+        <input id="phone" placeholder="Phone Number *">
+        <input id="email" placeholder="Email Address">
+        <textarea id="address" placeholder="Residential Address" rows="3"></textarea>
+    </div>
+
+    <div class="section-card">
+        <h2>Bank Details</h2>
+        <input id="bankName" placeholder="Bank Name">
+        <input id="bankAccountNumber" placeholder="Account Number">
+        <input id="bankAccountName" placeholder="Account Holder Name">
+    </div>
+
+    <div class="section-card">
+        <h2>Signature</h2>
+        <input id="signature" type="file" accept="image/*">
+        <img id="preview">
+    </div>
+
+    <button id="saveBtn" class="save-btn">Save Client</button>
+</div>
+
+<script src="js/storage.js"></script>
+<script>
+let bankEdited = false;
+
+const ni = document.getElementById("name"),
+      ii = document.getElementById("ic"),
+      pi = document.getElementById("phone"),
+      ei = document.getElementById("email"),
+      ai = document.getElementById("address"),
+      bn = document.getElementById("bankName"),
+      ba = document.getElementById("bankAccountNumber"),
+      bh = document.getElementById("bankAccountName"),
+      si = document.getElementById("signature"),
+      pv = document.getElementById("preview"),
+      sb = document.getElementById("saveBtn");
+
+bh.addEventListener("input", () => bankEdited = true);
+ni.addEventListener("input", () => { if(!bankEdited) bh.value = ni.value; });
+
+si.addEventListener("change", (e) => {
+    const f = e.target.files[0];
+    if(!f) return;
+    const r = new FileReader();
+    r.onload = (x) => { pv.src = x.target.result; pv.style.display = "block"; };
+    r.readAsDataURL(f);
+});
+
+sb.addEventListener("click", () => {
+    const c = {
+        name: ni.value.trim(),
+        ic: ii.value.trim(),
+        phone: pi.value.trim(),
+        email: ei.value.trim(),
+        address: ai.value.trim(),
+        bankName: bn.value.trim(),
+        bankAccountNumber: ba.value.trim(),
+        bankAccountName: bh.value.trim(),
+        signature: pv.src || ""
+    };
+    if(!c.name || !c.ic || !c.phone){
+        alert("Name, IC and Phone are required");
+        return;
+    }
+    saveClient(c);
+    location.href = "client.html";
+});
+</script>
+</body>
+</html>

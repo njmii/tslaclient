@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clients</title>
+<link rel="stylesheet" href="css/main.css">
+<style>
+.top { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; }
+.btn-back { background: #fff; color: #d71920; border: 1px solid #d71920; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+.search-box { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; font-size: 16px; }
+.client-card { background: #fff; border-radius: 16px; padding: 18px; margin-bottom: 12px; cursor: pointer; border: 1px solid var(--border); box-shadow: var(--shadow); transition: .25s; }
+.client-card:hover { border-color: var(--primary); }
+.client-card strong { display: block; font-size: 18px; margin-bottom: 4px; }
+.client-card p { color: var(--muted); font-size: 14px; margin: 0; }
+.add-btn { position: fixed; right: 20px; bottom: 20px; width: 60px; height: 60px; border: none; border-radius: 50%; background: var(--primary); color: #fff; font-size: 32px; box-shadow: 0 4px 12px rgba(215,25,32,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.empty { text-align: center; color: var(--muted); padding: 40px; }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="top">
+        <button class="btn-back" onclick="history.back()">← Back</button>
+        <h1>Clients</h1>
+    </div>
+
+    <input id="q" class="search-box" placeholder="Search by name, IC or phone...">
+
+    <div id="list"></div>
+
+    <button class="add-btn" onclick="location.href='add-client.html'">+</button>
+</div>
+
+<script src="js/storage.js"></script>
+<script>
+const l = document.getElementById('list'), q = document.getElementById('q');
+let clients = getClients();
+
+function render(data) {
+    l.innerHTML = '';
+    if (!data.length) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'empty';
+        emptyDiv.textContent = 'No clients yet';
+        l.appendChild(emptyDiv);
+        return;
+    }
+    data.forEach(x => {
+        let e = document.createElement('div');
+        e.className = 'client-card';
+
+        let nameEl = document.createElement('strong');
+        nameEl.textContent = x.name;
+
+        let infoEl = document.createElement('p');
+        infoEl.textContent = `${x.ic} • ${x.phone}`;
+
+        e.appendChild(nameEl);
+        e.appendChild(infoEl);
+
+        e.onclick = () => location.href = 'client-profile.html?id=' + x.id;
+        l.appendChild(e);
+    });
+}
+
+render(clients);
+
+q.oninput = () => {
+    let s = q.value.toLowerCase();
+    render(clients.filter(x =>
+        (x.name || '').toLowerCase().includes(s) ||
+        (x.ic || '').includes(s) ||
+        (x.phone || '').includes(s)
+    ));
+};
+</script>
+</body>
+</html>
