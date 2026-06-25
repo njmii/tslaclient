@@ -12,7 +12,17 @@ input, textarea { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid v
 input:focus, textarea:focus { border-color: var(--primary); outline: none; background: #fff; }
 .save-btn { width: 100%; padding: 18px; border: none; border-radius: 16px; background: var(--primary); color: #fff; font-size: 18px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(215,25,32,0.2); }
 .btn-back { background: #fff; color: #d71920; border: 1px solid #d71920; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 20px; }
-#preview { max-width: 100%; display: none; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border); }
+#preview { max-width: 100%; display: none; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border); background-image:
+    linear-gradient(45deg, #ccc 25%, transparent 25%),
+    linear-gradient(-45deg, #ccc 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #ccc 75%),
+    linear-gradient(-45deg, transparent 75%, #ccc 75%);
+    background-size: 10px 10px;
+    background-position: 0 0, 0 5px, 5px 5px, 5px 0;
+}
+.control-group { margin-top: 10px; display: none; }
+.control-group label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; }
+input[type=range] { width: 100%; margin: 0; padding: 0; background: transparent; }
 </style>
 </head>
 <body>
@@ -39,7 +49,12 @@ input:focus, textarea:focus { border-color: var(--primary); outline: none; backg
     <div class="section-card">
         <h2>Signature</h2>
         <input id="signature" type="file" accept="image/*">
+        <div id="controls" class="control-group">
+            <label>Background Removal Threshold (Slider to remove more background)</label>
+            <input id="threshold" type="range" min="0" max="255" value="200">
+        </div>
         <img id="preview">
+        <canvas id="canvas" style="display:none;"></canvas>
     </div>
 
     <button id="saveBtn" class="save-btn">Save Client</button>
@@ -48,6 +63,7 @@ input:focus, textarea:focus { border-color: var(--primary); outline: none; backg
 <script src="js/storage.js"></script>
 <script>
 let bankEdited = false;
+let originalImage = null;
 
 const ni = document.getElementById("name"),
       ii = document.getElementById("ic"),
@@ -59,18 +75,59 @@ const ni = document.getElementById("name"),
       bh = document.getElementById("bankAccountName"),
       si = document.getElementById("signature"),
       pv = document.getElementById("preview"),
-      sb = document.getElementById("saveBtn");
+      sb = document.getElementById("saveBtn"),
+      th = document.getElementById("threshold"),
+      ct = document.getElementById("controls"),
+      cv = document.getElementById("canvas");
 
 bh.addEventListener("input", () => bankEdited = true);
 ni.addEventListener("input", () => { if(!bankEdited) bh.value = ni.value; });
+
+function processImage() {
+    if (!originalImage) return;
+
+    const ctx = cv.getContext('2d');
+    cv.width = originalImage.width;
+    cv.height = originalImage.height;
+    ctx.drawImage(originalImage, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, cv.width, cv.height);
+    const data = imageData.data;
+    const threshold = parseInt(th.value);
+
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        // If the pixel is lighter than the threshold (closer to white), make it transparent
+        // Brightness formula: 0.299R + 0.587G + 0.114B
+        const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+
+        if (brightness > threshold) {
+            data[i + 3] = 0; // Alpha
+        }
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+    pv.src = cv.toDataURL('image/png');
+    pv.style.display = "block";
+    ct.style.display = "block";
+}
 
 si.addEventListener("change", (e) => {
     const f = e.target.files[0];
     if(!f) return;
     const r = new FileReader();
-    r.onload = (x) => { pv.src = x.target.result; pv.style.display = "block"; };
+    r.onload = (x) => {
+        originalImage = new Image();
+        originalImage.onload = processImage;
+        originalImage.src = x.target.result;
+    };
     r.readAsDataURL(f);
 });
+
+th.addEventListener("input", processImage);
 
 sb.addEventListener("click", () => {
     const c = {

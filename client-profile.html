@@ -14,7 +14,17 @@
 .btn-edit { background: #eee; color: #111; }
 .btn-delete { background: #ffebee; color: #d71920; }
 .btn-back { background: #fff; color: #d71920; border: 1px solid #d71920; width: auto; margin-bottom: 20px; }
-img.sig { width: 100%; border-radius: 8px; border: 1px solid #eee; margin-top: 10px; }
+img.sig { width: 100%; border-radius: 8px; border: 1px solid #eee; margin-top: 10px; background-image:
+    linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+    linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+    linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+    background-size: 10px 10px;
+    background-position: 0 0, 0 5px, 5px 5px, 5px 0;
+}
+.badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-left: 8px; vertical-align: middle; }
+.badge-success { background: #e8f5e9; color: #2e7d32; }
+.badge-warning { background: #fff3e0; color: #ef6c00; }
 </style>
 </head>
 <body>
@@ -32,23 +42,6 @@ const urlParams = new URLSearchParams(window.location.search);
 const clientId = urlParams.get('id');
 const profileDiv = document.getElementById('profile');
 
-function createField(label, value) {
-    const card = document.createElement('div');
-    card.className = 'profile-card';
-
-    const labelDiv = document.createElement('div');
-    labelDiv.className = 'label';
-    labelDiv.textContent = label;
-
-    const valueDiv = document.createElement('div');
-    valueDiv.className = 'value';
-    valueDiv.textContent = value || '-';
-
-    card.appendChild(labelDiv);
-    card.appendChild(valueDiv);
-    return card;
-}
-
 function loadProfile() {
     const clients = getClients();
     const client = clients.find(c => c.id === clientId);
@@ -59,6 +52,15 @@ function loadProfile() {
     }
 
     profileDiv.innerHTML = ''; // Clear previous content
+
+    // Header with status
+    const header = document.createElement('h1');
+    header.textContent = 'Profile';
+    const statusBadge = document.createElement('span');
+    statusBadge.className = 'badge ' + (client.signature ? 'badge-success' : 'badge-warning');
+    statusBadge.textContent = client.signature ? 'Signed' : 'Unsigned';
+    header.appendChild(statusBadge);
+    profileDiv.appendChild(header);
 
     // Personal Info Card
     const personalCard = document.createElement('div');
