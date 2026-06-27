@@ -1,4 +1,13 @@
 const STORAGE_KEY = "tsla_clients";
+const SETTINGS_KEY = "tsla_settings";
+
+function getSettings() {
+    return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {};
+}
+
+function saveSettings(settings) {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
 
 function getClients() {
     return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];

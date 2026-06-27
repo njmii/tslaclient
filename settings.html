@@ -5,12 +5,160 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Settings</title>
 <link rel="stylesheet" href="css/main.css">
+<style>
+.section-card { background: #fff; border-radius: 18px; padding: 18px; margin-bottom: 18px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+.section-card h2 { font-size: 14px; color: var(--primary); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; }
+input, textarea { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid var(--border); border-radius: 12px; box-sizing: border-box; font-size: 16px; background: #fcfcfc; }
+input:focus, textarea:focus { border-color: var(--primary); outline: none; background: #fff; }
+.save-btn { width: 100%; padding: 18px; border: none; border-radius: 16px; background: var(--primary); color: #fff; font-size: 18px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(215,25,32,0.2); margin-bottom: 40px; }
+.btn-back { background: #fff; color: #d71920; border: 1px solid #d71920; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 20px; }
+.sig-label { font-size: 13px; color: var(--muted); margin: 10px 0 6px; }
+.sig-wrap { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #fff; touch-action: none; }
+.sig-wrap canvas { display: block; width: 100%; cursor: crosshair; }
+.sig-clear { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; font-size: 13px; color: var(--muted); cursor: pointer; margin-top: 6px; }
+.sig-clear:hover { border-color: var(--primary); color: var(--primary); }
+</style>
 </head>
 <body>
 <div class="container">
-    <button class="btn" style="background:#fff; color:#d71920; border:1px solid #d71920; padding:10px 16px; border-radius:10px; font-weight:700; margin-bottom: 20px;" onclick="history.back()">← Back</button>
+    <button class="btn-back" onclick="history.back()">← Back</button>
     <h1>Settings</h1>
-    <p>This module is under development.</p>
+
+    <!-- Witness Section -->
+    <div class="section-card">
+        <h2>Default Witness</h2>
+        <input id="witnessName" placeholder="Witness Name *">
+        <input id="witnessIc" placeholder="Witness IC Number *">
+        <textarea id="witnessAddress" placeholder="Witness Address" rows="3"></textarea>
+        <p class="sig-label">Witness Signature</p>
+        <div class="sig-wrap"><canvas id="witnessSig" height="160"></canvas></div>
+        <button class="sig-clear" onclick="clearPad('witnessSig')">Clear Signature</button>
+    </div>
+
+    <!-- Agent Section -->
+    <div class="section-card">
+        <h2>Default Agent</h2>
+        <input id="agentName" placeholder="Agent Name *">
+        <input id="agentIc" placeholder="Agent IC Number *">
+        <input id="agentCode" placeholder="Agent Code *">
+        <p class="sig-label">Agent Signature</p>
+        <div class="sig-wrap"><canvas id="agentSig" height="160"></canvas></div>
+        <button class="sig-clear" onclick="clearPad('agentSig')">Clear Signature</button>
+    </div>
+
+    <button class="save-btn" onclick="saveAll()">Save Settings</button>
 </div>
+
+<script src="js/storage.js"></script>
+<script>
+// ── Signature pad ──────────────────────────────────────────────
+function initPad(id) {
+    const canvas = document.getElementById(id);
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+        const w = canvas.offsetWidth;
+        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        canvas.width = w;
+        ctx.putImageData(img, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    ctx.strokeStyle = '#151515';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    let drawing = false;
+
+    function pos(e) {
+        const r = canvas.getBoundingClientRect();
+        const src = e.touches ? e.touches[0] : e;
+        return { x: (src.clientX - r.left) * (canvas.width / r.width), y: (src.clientY - r.top) * (canvas.height / r.height) };
+    }
+
+    function start(e) { e.preventDefault(); drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }
+    function move(e)  { e.preventDefault(); if (!drawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }
+    function stop(e)  { e.preventDefault(); drawing = false; }
+
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    canvas.addEventListener('mouseup', stop);
+    canvas.addEventListener('mouseleave', stop);
+    canvas.addEventListener('touchstart', start, { passive: false });
+    canvas.addEventListener('touchmove', move,  { passive: false });
+    canvas.addEventListener('touchend', stop);
+
+    return { canvas, ctx };
+}
+
+const pads = {
+    witnessSig: initPad('witnessSig'),
+    agentSig:   initPad('agentSig')
+};
+
+function clearPad(id) {
+    const { canvas, ctx } = pads[id];
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function isEmpty(canvas) {
+    const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+    return !data.some(v => v !== 0);
+}
+
+function padData(id) {
+    const canvas = pads[id].canvas;
+    return isEmpty(canvas) ? '' : canvas.toDataURL('image/png');
+}
+
+function loadSig(id, dataUrl) {
+    if (!dataUrl) return;
+    const { canvas, ctx } = pads[id];
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    img.src = dataUrl;
+}
+
+// ── Load saved settings ────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+    const s = getSettings();
+    if (s.witness) {
+        document.getElementById('witnessName').value    = s.witness.name    || '';
+        document.getElementById('witnessIc').value      = s.witness.ic      || '';
+        document.getElementById('witnessAddress').value = s.witness.address  || '';
+        loadSig('witnessSig', s.witness.signature);
+    }
+    if (s.agent) {
+        document.getElementById('agentName').value  = s.agent.name  || '';
+        document.getElementById('agentIc').value    = s.agent.ic    || '';
+        document.getElementById('agentCode').value  = s.agent.code  || '';
+        loadSig('agentSig', s.agent.signature);
+    }
+});
+
+// ── Save ───────────────────────────────────────────────────────
+function saveAll() {
+    const witness = {
+        name:      document.getElementById('witnessName').value.trim(),
+        ic:        document.getElementById('witnessIc').value.trim(),
+        address:   document.getElementById('witnessAddress').value.trim(),
+        signature: padData('witnessSig')
+    };
+    const agent = {
+        name:      document.getElementById('agentName').value.trim(),
+        ic:        document.getElementById('agentIc').value.trim(),
+        code:      document.getElementById('agentCode').value.trim(),
+        signature: padData('agentSig')
+    };
+
+    if (!witness.name || !witness.ic) { alert('Witness name and IC are required'); return; }
+    if (!agent.name || !agent.ic || !agent.code) { alert('Agent name, IC and code are required'); return; }
+
+    saveSettings({ witness, agent });
+    alert('Settings saved!');
+}
+</script>
 </body>
 </html>
