@@ -13,6 +13,9 @@
 .client-card:hover { border-color: var(--primary); }
 .client-card strong { display: block; font-size: 18px; margin-bottom: 4px; }
 .client-card p { color: var(--muted); font-size: 14px; margin: 0; }
+.card-row { display: flex; align-items: center; justify-content: space-between; }
+.edit-btn { background: none; border: 1px solid var(--primary); color: var(--primary); border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.edit-btn:hover { background: var(--primary); color: #fff; }
 .add-btn { position: fixed; right: 20px; bottom: 20px; width: 60px; height: 60px; border: none; border-radius: 50%; background: var(--primary); color: #fff; font-size: 32px; box-shadow: 0 4px 12px rgba(215,25,32,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .empty { text-align: center; color: var(--muted); padding: 40px; }
 </style>
@@ -55,8 +58,21 @@ function render(data) {
         let infoEl = document.createElement('p');
         infoEl.textContent = `${x.ic} • ${x.phone}`;
 
-        e.appendChild(nameEl);
-        e.appendChild(infoEl);
+        let editBtn = document.createElement('button');
+        editBtn.className = 'edit-btn';
+        editBtn.textContent = 'Edit';
+        editBtn.onclick = (ev) => { ev.stopPropagation(); location.href = 'edit-client.html?id=' + x.id; };
+
+        let row = document.createElement('div');
+        row.className = 'card-row';
+
+        let info = document.createElement('div');
+        info.appendChild(nameEl);
+        info.appendChild(infoEl);
+
+        row.appendChild(info);
+        row.appendChild(editBtn);
+        e.appendChild(row);
 
         e.onclick = () => location.href = 'client-profile.html?id=' + x.id;
         l.appendChild(e);
